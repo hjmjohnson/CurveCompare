@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
  
-PROJECT(CurveCompare)
+project(CurveCompare)
 
-FIND_PACKAGE(GenerateCLP REQUIRED)
-IF(GenerateCLP_FOUND)
-  INCLUDE(${GenerateCLP_USE_FILE})
-ELSE(GenerateCLP_FOUND)
-  MESSAGE(FATAL_ERROR
+find_package(GenerateCLP REQUIRED)
+if(GenerateCLP_FOUND)
+  include(${GenerateCLP_USE_FILE})
+else()
+  message(FATAL_ERROR
           "GenerateCLP not found. Please set GenerateCLP_DIR.")
-ENDIF(GenerateCLP_FOUND)
+endif()
 
 find_package(ITK COMPONENTS
   ITKCommon
@@ -42,8 +42,8 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
 
-SET(src CurveCompare.cxx)
+set(src CurveCompare.cxx)
 GENERATECLP(src CurveCompare.xml)
-ADD_EXECUTABLE( CurveCompare ${src})
+add_executable( CurveCompare ${src})
 
-TARGET_LINK_LIBRARIES( CurveCompare ${ITK_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries( CurveCompare ${ITK_LIBRARIES} ${VTK_LIBRARIES})
