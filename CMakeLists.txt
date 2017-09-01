@@ -2,15 +2,10 @@ cmake_minimum_required(VERSION 3.5)
  
 project(CurveCompare)
 
-find_package(GenerateCLP REQUIRED)
-if(GenerateCLP_FOUND)
-  include(${GenerateCLP_USE_FILE})
-else()
-  message(FATAL_ERROR
-          "GenerateCLP not found. Please set GenerateCLP_DIR.")
-endif()
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
-find_package(ITK COMPONENTS
+find_package(ITK 4 REQUIRED COMPONENTS
   ITKCommon
   ITKIOImageBase
   ITKImageAdaptors
@@ -24,7 +19,10 @@ find_package(ITK COMPONENTS
 )
 include(${ITK_USE_FILE})
 
-find_package(VTK COMPONENTS
+if(NOT VTK_RENDERING_BACKEND)
+  set(VTK_RENDERING_BACKEND OpenGL)
+endif()
+find_package(VTK REQUIRED COMPONENTS
   vtkCommonComputationalGeometry
   vtkCommonCore
   vtkCommonDataModel
@@ -32,18 +30,14 @@ find_package(VTK COMPONENTS
   vtkIOLegacy
   vtkIOXML
   vtkInteractionWidgets
+  vtkRendering${VTK_RENDERING_BACKEND}
   vtkViewsInfovis
 )
 include(${VTK_USE_FILE})
 
-if( ${ITK_VERSION_MAJOR} VERSION_LESS 4 )
-  message( FATAL_ERROR "CurveCompare needs ITKv4 to compile" )
-endif()
+SEMMacroBuildCLI(
+  NAME CurveCompare
+  TARGET_LIBRARIES ${ITK_LIBRARIES} ${VTK_LIBRARIES}
+  EXECUTABLE_ONLY
+  )
 
-include_directories(${PROJECT_SOURCE_DIR})
-
-set(src CurveCompare.cxx)
-GENERATECLP(src CurveCompare.xml)
-add_executable( CurveCompare ${src})
-
-target_link_libraries( CurveCompare ${ITK_LIBRARIES} ${VTK_LIBRARIES})
