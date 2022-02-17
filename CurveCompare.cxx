@@ -56,20 +56,20 @@ std::vector<double> FillOverlapTable(vtkSmartPointer<vtkPolyData> Source, vtkSma
   int numberPointsSource=SourcePoints->GetNumberOfPoints();
   int numberPointsTarget=TargetPoints->GetNumberOfPoints();
 
-  const unsigned int DIM = 3;
+  constexpr unsigned int DIM = 3;
   typedef unsigned short ScalarPixelType;
   typedef itk::Image<ScalarPixelType, DIM> IntImageType;
   /*typedef itk::DiffusionTensor3D<double> TensorPixelType;
   typedef itk::Image<TensorPixelType, DIM> TensorImageType;
   // Setup tensor file if available
   typedef itk::ImageFileReader<TensorImageType> TensorImageReader;
-  TensorImageReader::Pointer tensorreader = NULL;
-  tensorreader = TensorImageReader::New();   
+  TensorImageReader::Pointer tensorreader = nullptr;
+  tensorreader = TensorImageReader::New();
   tensorreader->SetFileName(tensorVolume.c_str());
   tensorreader->Update();*/
   typedef itk::ImageFileReader<IntImageType> ScalarImageReader;
-  ScalarImageReader::Pointer scalarReader = NULL;
-  scalarReader = ScalarImageReader::New();   
+  ScalarImageReader::Pointer scalarReader = nullptr;
+  scalarReader = ScalarImageReader::New();
   scalarReader->SetFileName(ReferenceScalarVolume.c_str());
   scalarReader->Update();
 
@@ -109,7 +109,7 @@ std::vector<double> FillOverlapTable(vtkSmartPointer<vtkPolyData> Source, vtkSma
   labelimage2CountF->Allocate();
   labelimage2CountF->FillBuffer(0);
 
-  
+
   typedef itk::Point<double, 3> PointType;
   PointType fiberpoint;
   double fiberpointtemp[3];
@@ -123,9 +123,9 @@ std::vector<double> FillOverlapTable(vtkSmartPointer<vtkPolyData> Source, vtkSma
       itk::ContinuousIndex<double,3> cind;
       itk::Index<3> ind;
       labelimage1->TransformPhysicalPointToContinuousIndex(fiberpoint, cind);
-      ind[0] = static_cast<long int>(vnl_math_rnd_halfinttoeven(cind[0]));
-      ind[1] = static_cast<long int>(vnl_math_rnd_halfinttoeven(cind[1]));
-      ind[2] = static_cast<long int>(vnl_math_rnd_halfinttoeven(cind[2]));
+      ind[0] = static_cast<long int>(itk::Math::rnd_halfinttoeven(cind[0]));
+      ind[1] = static_cast<long int>(itk::Math::rnd_halfinttoeven(cind[1]));
+      ind[2] = static_cast<long int>(itk::Math::rnd_halfinttoeven(cind[2]));
 	
       if(!labelimage1->GetLargestPossibleRegion().IsInside(ind))
       {
@@ -152,9 +152,9 @@ std::vector<double> FillOverlapTable(vtkSmartPointer<vtkPolyData> Source, vtkSma
       itk::ContinuousIndex<double,3> cind2;
       itk::Index<3> ind2;
       labelimage2->TransformPhysicalPointToContinuousIndex(fiberpoint2, cind2);
-      ind2[0] = static_cast<long int>(vnl_math_rnd_halfinttoeven(cind2[0]));
-      ind2[1] = static_cast<long int>(vnl_math_rnd_halfinttoeven(cind2[1]));
-      ind2[2] = static_cast<long int>(vnl_math_rnd_halfinttoeven(cind2[2]));
+      ind2[0] = static_cast<long int>(itk::Math::rnd_halfinttoeven(cind2[0]));
+      ind2[1] = static_cast<long int>(itk::Math::rnd_halfinttoeven(cind2[1]));
+      ind2[2] = static_cast<long int>(itk::Math::rnd_halfinttoeven(cind2[2]));
 	
       if(!labelimage2->GetLargestPossibleRegion().IsInside(ind2))
       {
@@ -174,7 +174,7 @@ std::vector<double> FillOverlapTable(vtkSmartPointer<vtkPolyData> Source, vtkSma
  typedef itk::LabelOverlapMeasuresImageFilter <IntImageType> LabelOverlapMeasuresImageFilterType;
  LabelOverlapMeasuresImageFilterType::Pointer  LabelOverlapMeasuresImageFilter= LabelOverlapMeasuresImageFilterType::New();
  LabelOverlapMeasuresImageFilter->SetSourceImage(labelimage1);
- LabelOverlapMeasuresImageFilter->SetTargetImage(labelimage2); 
+ LabelOverlapMeasuresImageFilter->SetTargetImage(labelimage2);
  LabelOverlapMeasuresImageFilter->Update();
 
 double total=LabelOverlapMeasuresImageFilter->GetTotalOverlap();
@@ -209,7 +209,7 @@ img_it2.GoToBegin();
 while(!img_it1.IsAtEnd() && !img_it2.IsAtEnd())
     {
     // Get the value of the current voxel
-     double val1 = img_it1.Get(); 
+     double val1 = img_it1.Get();
      double  val2= img_it2.Get();
      //Get the proba on each voxel
      double Pa=val1/numberPointsSource;
@@ -244,7 +244,8 @@ std::vector<double> FillCurvatureTable(vtkSmartPointer<vtkPolyData> SourceInterp
 	std::cout<<" number of points in source: "<<SourcePointsNew->GetNumberOfPoints()<<std::endl;
 	std::cout<<" number of points in target: "<<TargetPointsNew->GetNumberOfPoints()<<std::endl;
 
-	vtkIdType nbpts=0, *pts=0;
+	vtkIdType nbpts=0;
+        vtkIdType const *pts=0;
 	double Tbis[3],Tbis2[3];
 	double T[3],T2[3];
 	double curvature1=0;
@@ -286,7 +287,8 @@ std::vector<double> FillCurvatureTable(vtkSmartPointer<vtkPolyData> SourceInterp
 			double TargetPoint[3];
 			double Distance=0;
 			////for each fiber of vtk file Target////
-			vtkIdType nbpts2=0, *pts2=0;
+			vtkIdType nbpts2=0;
+                        vtkIdType const *pts2=0;
 			vtkSmartPointer<vtkCellArray> P = vtkSmartPointer<vtkCellArray>::New();
 			P=TargetInterpolated->GetLines();
 			P->InitTraversal();
@@ -375,7 +377,8 @@ std::vector<double> FillTangentTable(vtkSmartPointer<vtkPolyData> SourceInterpol
 	vtkPoints* SourcePointsNew = SourceInterpolated->GetPoints();
 	vtkPoints* TargetPointsNew = TargetInterpolated->GetPoints();
 	
-	vtkIdType nbpts=0, *pts=0;
+	vtkIdType nbpts=0;
+        vtkIdType const *pts=0;
 	typedef itk::Vector<double, 3> VectorType;
 	VectorType v1, v2;		
 	std::cout<<" number of points in source: "<<SourcePointsNew->GetNumberOfPoints()<<std::endl;
@@ -405,7 +408,8 @@ std::vector<double> FillTangentTable(vtkSmartPointer<vtkPolyData> SourceInterpol
 			points->GetPoint(i,SourceP);	
 			double TargetPoint[3];
 			double Distance=0;
-			vtkIdType nbpts2=0, *pts2=0;
+			vtkIdType nbpts2=0;
+                        vtkIdType const *pts2=0;
 			vtkSmartPointer<vtkCellArray> P = vtkSmartPointer<vtkCellArray>::New();
 			P=TargetInterpolated->GetLines();
 			P->InitTraversal();
@@ -470,7 +474,7 @@ std::vector<double> FillTangentTable(vtkSmartPointer<vtkPolyData> SourceInterpol
 		double temp1[3],temp2[3];
 		//std::cout<<"i : "<<i<<std::endl;
 		if (i==0)////if we are at the beginning of the fiber////
-		{ 
+		{
 			points->GetPoint(i+1,temp2);
 			for(int k=0;k<3;k++)
 			{
@@ -712,7 +716,8 @@ int main(int argc, char* argv[])
 	vtkSmartPointer<vtkPolyData> TargetInterpolated = vtkSmartPointer<vtkPolyData>::New();
 	typedef itk::Vector<double, 3> VectorType;
 	
-	vtkIdType nbpts=0, *pts=0;
+	vtkIdType nbpts=0;
+        vtkIdType const *pts=0;
 	VectorType v1, v2;
 	////for each fiber of vtk file Source////
 	vtkSmartPointer <vtkCellArray> cells = vtkSmartPointer <vtkCellArray>::New();
@@ -734,7 +739,7 @@ int main(int argc, char* argv[])
    		
     		vtkCardinalSpline* aSplineX;
     		vtkCardinalSpline* aSplineY;
-   		vtkCardinalSpline* aSplineZ;    
+   		vtkCardinalSpline* aSplineZ;
    		aSplineX = vtkCardinalSpline::New();
    		aSplineY = vtkCardinalSpline::New();
     		aSplineZ = vtkCardinalSpline::New();
@@ -743,9 +748,9 @@ int main(int argc, char* argv[])
 		aSplineZ->ClosedOff();
 
 		/////creation of splines/////
-   		 for (int i=0; i<numberOfInputPoints; i++) 
+   		 for (int i=0; i<numberOfInputPoints; i++)
    		 {
-		  
+		
     		  double x = points->GetPoint(i)[0];
     		  double y = points->GetPoint(i)[1];
      		  double z = points->GetPoint(i)[2];
@@ -756,7 +761,7 @@ int main(int argc, char* argv[])
 	
 
 		double  tRange[2];
-		aSplineX->GetParametricRange 	( tRange); 
+		aSplineX->GetParametricRange 	( tRange);
 		int compteur2=0;
     		
 		////evaluation of new points then store it in polypoints////
@@ -787,7 +792,8 @@ int main(int argc, char* argv[])
 	polypoints->Delete();
 	std::cout<<"end of the first interpolation"<<std::endl<<std::endl;
 
-	vtkIdType nbpts2=0, *pts2=0;
+	vtkIdType nbpts2=0;
+        vtkIdType const *pts2=0;
 	vtkSmartPointer <vtkCellArray> cells2 = vtkSmartPointer <vtkCellArray>::New();
 	int countID2=0;
 	vtkPoints* polypoints2 = vtkPoints::New();
@@ -806,7 +812,7 @@ int main(int argc, char* argv[])
 		int numberOfInputPoints2 = points2->GetNumberOfPoints();
     		vtkCardinalSpline* aSpline2X;
     		vtkCardinalSpline* aSpline2Y;
-   		vtkCardinalSpline* aSpline2Z;    
+   		vtkCardinalSpline* aSpline2Z;
 
    		aSpline2X = vtkCardinalSpline::New();
    		aSpline2Y = vtkCardinalSpline::New();
@@ -815,7 +821,7 @@ int main(int argc, char* argv[])
 		aSpline2Y->ClosedOff();
 		aSpline2Z->ClosedOff();
 		/////creation of splines/////
-   		 for (int i=0; i<numberOfInputPoints2; i++) 
+   		 for (int i=0; i<numberOfInputPoints2; i++)
    		{
 			//std::cout<<"step6"<<std::endl;
     		 	double x2 = points2->GetPoint(i)[0];
@@ -846,7 +852,7 @@ int main(int argc, char* argv[])
 		aSpline2Y->Delete();
 		aSpline2Z->Delete();
 		
-		//end 
+		//end
 
 	}
 	TargetInterpolated->SetPoints(polypoints2);
